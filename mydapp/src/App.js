@@ -10,9 +10,10 @@ class App extends Component
 	constructor(props)
 	{
 		super(props);
-		this.state={
+		this.state = {
 		web3 : null,
 		account: null,
+		accounts: null,
 		contract : null,
 		confession: ''
 		}
@@ -29,11 +30,17 @@ class App extends Component
 			
 			const networkId = await web3.eth.net.getId();
 			const deployedNetwork = dConfessContract.networks[networkId];
-			const contract= new web3.eth.Contract(dConfessContract.abi,deployedNetwork && deployedNetwork.address);
+			const instance = new web3.eth.Contract(dConfessContract.abi, deployedNetwork.address);
 			// Set web3, accounts, and contract to the state, and then proceed with an
 			// example of interacting with the contract's methods.
-			const account = await contract.methods.getAddress().call();
-			this.setState({ web3, account ,contract: contract });
+			// const account = await contract.methods.getAddress().call();console.log("j "+account);
+			console.log(instance);
+			this.setState({
+				web3,
+				accounts,
+				contract: instance
+			});
+			this.setState({account:accounts[0]})
 			
 		} catch (error) {
 			// Catch any errors for any of the above operations.
@@ -67,7 +74,11 @@ class App extends Component
 		const contract = this.state.contract;
 		const account = this.state.account; 
 		const confess = this.state.confession;
-		await contract.methods.set(confess).send({from:account}).then((e)=>{console.log('confession sent',e)}) ;
+		await contract.methods.set(confess).send({
+			from: "0x650fAEDe9a671509022ABdb1F6e591A0886739B8"
+		}).then((e) => {
+			console.log('confession sent', e)
+		});
 	}
 
 	getAllConfessions = async()=>{
