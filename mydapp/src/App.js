@@ -5,6 +5,9 @@ import './App.css';
 import { render } from 'react-dom';
 
 let no_of_confessions=0;
+let which_page = false;
+let element ;
+
 class App extends Component
 {
 	constructor(props)
@@ -15,7 +18,8 @@ class App extends Component
 		account: null,
 		accounts: null,
 		contract : null,
-		confession: ''
+		confession: '',
+		all_confessions:[],
 		}
 	}
 	componentDidMount = async () => 
@@ -23,10 +27,10 @@ class App extends Component
 		try {
 			// Get network provider and web3 instance.
 			const web3 = await getWeb3();
-			console.log(web3)
+			//console.log(web3)
 			// Get the contract instance.
 			const accounts = await web3.eth.getAccounts();
-			console.log(accounts[0]);
+			// console.log(accounts[0]);
 			
 			const networkId = await web3.eth.net.getId();
 			const deployedNetwork = dConfessContract.networks[networkId];
@@ -34,7 +38,8 @@ class App extends Component
 			// Set web3, accounts, and contract to the state, and then proceed with an
 			// example of interacting with the contract's methods.
 			// const account = await contract.methods.getAddress().call();console.log("j "+account);
-			console.log(instance);
+			console.log(deployedNetwork)
+			// console.log(instance);
 			this.setState({
 				web3,
 				accounts,
@@ -58,14 +63,18 @@ class App extends Component
 	};
 
 	getCount = async()=>{
-		//await this.getAccount();
+		await this.getAccount();
 		const contract = this.state.contract;
 		const account = this.state.account; 
 		const totalConfessions =  await contract.methods.getAddressCount(account).call();
 		console.log("totalconfessions : ",totalConfessions);
 		no_of_confessions=totalConfessions;
 	};
-
+	ChangePage =(e)=>
+	{
+	which_page=true
+	window.location='http://localhost:3000/'
+	}
 	handleConfessionChange=(e)=>{
 		this.setState({ confession: e.target.value });
 	};
@@ -75,18 +84,19 @@ class App extends Component
 		const account = this.state.account; 
 		const confess = this.state.confession;
 		await contract.methods.set(confess).send({
-			from: "0x650fAEDe9a671509022ABdb1F6e591A0886739B8"
+			from: account
 		}).then((e) => {
 			console.log('confession sent', e)
 		});
 	}
 
 	getAllConfessions = async()=>{
-		//await this.getAccount();
+		which_page = true; 
+		await this.getAccount();
 		const contract = this.state.contract;
 		const account = this.state.account; 
 		var confess = '';
-		//await this.getCount();
+		await this.getCount();
 		if(no_of_confessions==0)
 		{
 			window.alert("Confess first!!!!!");
@@ -96,41 +106,69 @@ class App extends Component
 			for(let i=0;i<no_of_confessions;i++)
 			{
 				confess = await contract.methods.getConfession(account,i).call();
+				this.setState({confession:confess})
 				console.log('confession :',(i+1),confess); 
+				let joined = this.state.all_confessions.concat(<div class="grid-item"><b>{this.state.confession}</b></div>)
+				this.setState({all_confessions:joined})
+				joined = this.state.all_confessions.concat(<div><br></br><br></br></div>)
+				this.setState({all_confessions:joined})
 			}
 			
 		}
+		
+		
 	};
+
 	render()
 	{	
-		console.log('web3: -->',this.state.web3);
+		
 		if (!this.state.web3) {
 			return <div>Loading Web3, accounts, and contract...</div>;
 		}
-		return (	
-			<div className ="wrapper">
-			<form className="paper">
-			 
-			<textarea placeholder="Express your feelings here." value={this.state.confession} className="text" name="confession" rows="4"  onChange={this.handleConfessionChange} ></textarea>
+		else if(which_page===false)
+		{
+			return (
+				<center>
+				<div className ="wrapper">
+				<form className="paper">
+				<h1 class="title"><i>Confessions</i></h1>
+				<br></br>
+				<br></br>
+				<br></br>
+				<br></br>
+				<textarea placeholder="Express your feelings here" value={this.state.confession} className="text" name="confession" rows="4"  onChange={this.handleConfessionChange} ></textarea>
+				
+				<br></br>
+				<br></br>
+				<br></br>
+				<div className="down"></div>
+				<button type="button" className="glow-on-hover"  onClick={this.handleConfessionSubmit}>Confess</button>
+				
+				
+				<br></br>
+				<br></br>
+				
+				
+				
+				<button type="button"  className="glow-on-hover" onClick={this.getAllConfessions}>Show Confessions</button>
+				</form>
+				</div>
+				</center>
 			
-			<br></br>
-			<br></br>
-			<br></br>
-	        <div className="down"></div>
-			<button type="button" className="glow-on-hover"  onClick={this.handleConfessionSubmit}>Confess</button>
-			<div className="divider"></div>
-			<button type="button" className="glow-on-hover"  onClick={this.getAccount}>GetAccount</button>
-			<br></br>
-			<br></br>
-			<div className="down"></div>
-			<button type="button" className="glow-on-hover"  onClick={this.getCount}>Total Confessions</button>
-			<div className="divider"></div>
-			<button type="button"  className="glow-on-hover" onClick={this.getAllConfessions}>Show Confessions</button>
-			</form>
-			</div>
-           
-			 
+			
 			);
+		}
+		else
+		{
+			return (
+			<div>
+			<div className="grid-container">{this.state.all_confessions}</div>
+			<center><button type="button"  className="glow-on-hover" onClick={this.ChangePage}>Confess Again!</button>
+			</center>
+			</div>	
+			);
+
+		}
 
 	}
 }
