@@ -17,7 +17,13 @@ the generated abi.
 - Run-time env :- Truffle-suite
 - Framework :- ReactJs
 
+## Developed By
+- [Ajita Mishra](https://github.com/ajitamishra)
+- [Rishabh Mishra](https://github.com/Rishabh3321)
+
 ## Mentors
 - [Hrishabh Sharma](https://github.com/Sharma-Hrishabh)
 - [Ujjwal Kumar](https://github.com/Ujjwal0501)
+
+
 
